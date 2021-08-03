@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Wrangler"
         mc:Ignorable="d"
         FontSize="18"
-        Title="Wrangler" Height="300" Width="581">
+        Title="Wrangler" Height="300" Width="629">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -30,7 +30,7 @@
         <!--Source Selection-->
         <TextBlock Grid.Column="1" Grid.Row="1" Text="Select Source Device:" />
 
-            <ListBox x:Name="cbxSources" Grid.Column="1" Grid.Row="2" FontSize="12">
+            <ListBox x:Name="cbxSources" Grid.Column="1" Grid.Row="2" FontSize="14">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
@@ -47,7 +47,7 @@
 
 
         <!--Preset Selection and management-->
-        <TextBlock Grid.Column="2" Grid.Row="1" Text="Select Preset:" Margin="20,0,0,0"/>
+        <TextBlock Grid.Column="2" Grid.Row="1" Text="Select Preset:" Margin="10,0,0,0"/>
 
         <ComboBox x:Name="cbxPreset" Grid.Column="2" Grid.Row="2" Margin="10">
             <ComboBox.ItemTemplate>
