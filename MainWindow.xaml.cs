@@ -47,7 +47,7 @@ namespace Wrangler
 
 			foreach (DriveInfo drive in drives)
 			{
-				if (drive.DriveType.Equals(DriveType.Removable)){
+				if (!drive.DriveType.Equals(DriveType.Network)){
 					devices.Add(new Device { 
 						driveLetter = drive.Name, 
 						name = drive.VolumeLabel,
