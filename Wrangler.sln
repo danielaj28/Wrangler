@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wrangler", "Wrangler.csproj", "{BB345D9C-921D-4F34-A0C6-3F283E188258}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB345D9C-921D-4F34-A0C6-3F283E188258}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB345D9C-921D-4F34-A0C6-3F283E188258}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB345D9C-921D-4F34-A0C6-3F283E188258}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB345D9C-921D-4F34-A0C6-3F283E188258}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {941DC8C8-3BB4-4530-B397-E47318A88672}
+	EndGlobalSection
+EndGlobal
