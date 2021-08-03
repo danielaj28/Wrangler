@@ -51,8 +51,8 @@ namespace Wrangler
 					devices.Add(new Device { 
 						driveLetter = drive.Name, 
 						name = drive.VolumeLabel,
-						used = (drive.TotalSize-drive.TotalFreeSpace)/1024 /1024 /1024,
-						total=drive.TotalSize/1024/1024/1024 
+						used = (drive.TotalSize-drive.TotalFreeSpace)/1024 /1024,
+						total=drive.TotalSize/1024/1024 
 					});
 				}
 			}
