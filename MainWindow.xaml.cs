@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Wrangler
 {
@@ -23,6 +11,7 @@ namespace Wrangler
 	{
 		List<Device> devices = new List<Device>();
 		List<Preset> presets = new List<Preset>();
+		Presets winPresets = new Presets();
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -62,6 +51,17 @@ namespace Wrangler
 		private void btnDeviceRefresh_Click(object sender, RoutedEventArgs e)
 		{
 			UpdateDriveList();
+		}
+
+		private void btnManagePresets_Click(object sender, RoutedEventArgs e)
+		{
+			winPresets.Show();
+			winPresets.Focus();
+		}
+
+		public List<Preset> GetPresets()
+		{
+			return presets;
 		}
 	}
 }
