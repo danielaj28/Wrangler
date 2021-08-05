@@ -60,7 +60,7 @@
         </ComboBox>
 
         <!--Preset Selection and management-->
-        <Button x:Name="btnStart" Grid.Column="3" Grid.Row="1" Content="Start Wrangling" Grid.RowSpan="2" Margin="20,0,20,0" />
+        <Button x:Name="btnStart" Grid.Column="3" Grid.Row="1" Content="Start Wrangling" Grid.RowSpan="2" Margin="20,0,20,0" Click="btnStart_Click" />
 
         
         <!--Progress status-->
