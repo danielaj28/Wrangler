@@ -11,6 +11,7 @@ namespace Wrangler
 	{
 		List<Device> devices = new List<Device>();
 		List<Preset> presets = new List<Preset>();
+		Presets winPresets = new Presets();
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -43,8 +44,8 @@ namespace Wrangler
 					devices.Add(new Device { 
 						driveLetter = drive.Name, 
 						name = drive.VolumeLabel,
-						used = (drive.TotalSize-drive.TotalFreeSpace)/1024 /1024 /1024,
-						total=drive.TotalSize/1024/1024/1024 
+						used = (drive.TotalSize-drive.TotalFreeSpace)/1024 /1024,
+						total=drive.TotalSize/1024/1024 
 					});
 				}
 			}
@@ -102,6 +103,17 @@ namespace Wrangler
 		private IEnumerable<string> GetAllFiles(string dir)
 		{
 			return Directory.GetFiles(dir, "*", SearchOption.AllDirectories);
+		}
+
+		private void btnManagePresets_Click(object sender, RoutedEventArgs e)
+		{
+			winPresets.Show();
+			winPresets.Focus();
+		}
+
+		public List<Preset> GetPresets()
+		{
+			return presets;
 		}
 	}
 }
