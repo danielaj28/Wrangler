@@ -46,7 +46,7 @@
                 Content="Add Preset" Margin="10" Click="btnAddPreset_Click" 
                  />
         <Button x:Name="btnDeletePreset" Grid.Column="1" Grid.Row="5"
-                Content="Delete Preset" Margin="10" 
+                Content="Delete Preset" Margin="10" Click="btnDeletePreset_Click" 
                  />
         
         <!--Paths-->
