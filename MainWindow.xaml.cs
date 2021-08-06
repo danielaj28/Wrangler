@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Windows;
 
 namespace Wrangler
@@ -80,25 +81,32 @@ namespace Wrangler
 
 			sourceFilePaths.AddRange(GetAllFiles(sourceDevice.driveLetter));
 
-
+			List<Thread> threads = new List<Thread>();
 			//Copy
 			foreach (var destinationPath in targetPreset.paths)
 			{
-				foreach (string sourceFilePath in sourceFilePaths)
-				{
-					string relativeFilePath = sourceFilePath.Substring(sourceFilePath.IndexOf("\\",0),sourceFilePath.Length- sourceFilePath.IndexOf("\\", 0));
-					string middlePath = relativeFilePath.Substring(0, relativeFilePath.LastIndexOf("\\"));
-					string directoryPathToCreate = destinationPath+middlePath;
-					string filePathDestination = destinationPath+ relativeFilePath;
-
-					Directory.CreateDirectory(directoryPathToCreate);
-					File.Copy(sourceFilePath, filePathDestination);
-				}
+				Thread t = new Thread(()=> Copy(sourceFilePaths, destinationPath));
+				t.Start();
+				threads.Add(t);
 			}
 
 			//Verify
 
 
+		}
+
+		private void Copy(List<string> sourceFilePaths,string destinationPath)
+		{
+			foreach (string sourceFilePath in sourceFilePaths)
+			{
+				string relativeFilePath = sourceFilePath.Substring(sourceFilePath.IndexOf("\\", 0), sourceFilePath.Length - sourceFilePath.IndexOf("\\", 0));
+				string middlePath = relativeFilePath.Substring(0, relativeFilePath.LastIndexOf("\\"));
+				string directoryPathToCreate = destinationPath + middlePath;
+				string filePathDestination = destinationPath + relativeFilePath;
+
+				Directory.CreateDirectory(directoryPathToCreate);
+				File.Copy(sourceFilePath, filePathDestination);
+			}
 		}
 
 		private IEnumerable<string> GetAllFiles(string dir)
