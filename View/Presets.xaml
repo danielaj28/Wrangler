@@ -30,7 +30,7 @@
         <!--Source Selection-->
         <TextBlock Grid.Column="1" Grid.Row="1" Text="Presets:" />
 
-        <ListBox x:Name="listPresets2" Grid.Column="1" Grid.Row="2" FontSize="14">
+        <ListBox x:Name="listPresets2" Grid.Column="1" Grid.Row="2" FontSize="14" SelectionChanged="listPresets2_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
@@ -54,22 +54,9 @@
 
         <TextBlock Grid.Column="2" Grid.Row="1" Text="Paths:" Margin="20,0,0,0" />
 
-        <ListBox x:Name="listPaths" Grid.Column="2" Grid.Row="2" FontSize="14" Margin="20,0,0,0">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding path}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-
-        <Button x:Name="btnAddPath" Grid.Column="2" Grid.Row="3"
-                Content="Add Path" Margin="20,10,10,10" 
-                 />
-        <Button x:Name="btnDeletePath" Grid.Column="2" Grid.Row="4"
-                Content="Delete Path" Margin="20,10,10,10" 
-                 />
+        <TextBox x:Name="txtPaths" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="20,0,0,0" AcceptsReturn="True" LostFocus="txtPaths_LostFocus">
+            
+        </TextBox>
 
 
     </Grid>
