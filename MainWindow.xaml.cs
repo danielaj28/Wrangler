@@ -9,9 +9,9 @@ namespace Wrangler
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		List<Device> devices = new List<Device>();
-		List<Preset> presets = new List<Preset>();
-		Presets winPresets = new Presets();
+		public static List<Device> devices = new List<Device>();
+		public static List<Preset> presets = new List<Preset>();
+		
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -30,6 +30,7 @@ namespace Wrangler
 			presets.Add(p);
 
 			cbxPreset.ItemsSource = presets;
+
 		}
 
 		private void UpdateDriveList()
@@ -107,13 +108,14 @@ namespace Wrangler
 
 		private void btnManagePresets_Click(object sender, RoutedEventArgs e)
 		{
+			Presets winPresets = new Presets(this);
 			winPresets.Show();
 			winPresets.Focus();
 		}
 
-		public List<Preset> GetPresets()
+		public void UpdatePresets()
 		{
-			return presets;
+			cbxPreset.Items.Refresh();
 		}
 	}
 }

@@ -17,10 +17,30 @@ namespace Wrangler
 	/// </summary>
 	public partial class Presets : Window
 	{
-		public Presets()
+		MainWindow mainWindow;
+		public Presets(MainWindow mw)
 		{
-			//listPresets.ItemsSource = ((Preset)Application.Current.MainWindow).presets;
 			InitializeComponent();
+
+			listPresets2.ItemsSource = MainWindow.presets;
+			mainWindow = mw;
+
+		}
+
+		private void btnAddPreset_Click(object sender, RoutedEventArgs e)
+		{
+
+			if (txtNewPreset.Text.Trim().Length>0)
+			{
+				MainWindow.presets.Add(new Preset { name = txtNewPreset.Text.Trim() });
+				txtNewPreset.Clear();
+				listPresets2.Items.Refresh();
+				listPresets2.SelectedItem = MainWindow.presets[MainWindow.presets.Count - 1];
+
+				mainWindow.UpdatePresets();
+			}
+			
+			//listPresets2.SelectedItem = MainWindow.presets.get;
 		}
 	}
 }

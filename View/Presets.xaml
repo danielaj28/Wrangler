@@ -28,9 +28,9 @@
         </Grid.RowDefinitions>
 
         <!--Source Selection-->
-        <TextBlock Grid.Column="1" Grid.Row="1" Text="Existing Presets:" />
+        <TextBlock Grid.Column="1" Grid.Row="1" Text="Presets:" />
 
-        <ListBox x:Name="listPresets" Grid.Column="1" Grid.Row="2" FontSize="14">
+        <ListBox x:Name="listPresets2" Grid.Column="1" Grid.Row="2" FontSize="14">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
@@ -40,9 +40,37 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <Button x:Name="btnDelete" Grid.Column="1" Grid.Row="3"
-                Content="Refresh" Margin="10" 
+        <TextBox x:Name="txtNewPreset" Grid.Column="1" Grid.Row="3" Margin="10" />
+        
+        <Button x:Name="btnAddPreset" Grid.Column="1" Grid.Row="4"
+                Content="Add Preset" Margin="10" Click="btnAddPreset_Click" 
                  />
+        <Button x:Name="btnDeletePreset" Grid.Column="1" Grid.Row="5"
+                Content="Delete Preset" Margin="10" 
+                 />
+        
+        <!--Paths-->
+
+
+        <TextBlock Grid.Column="2" Grid.Row="1" Text="Paths:" Margin="20,0,0,0" />
+
+        <ListBox x:Name="listPaths" Grid.Column="2" Grid.Row="2" FontSize="14" Margin="20,0,0,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <TextBlock Text="{Binding path}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Button x:Name="btnAddPath" Grid.Column="2" Grid.Row="3"
+                Content="Add Path" Margin="20,10,10,10" 
+                 />
+        <Button x:Name="btnDeletePath" Grid.Column="2" Grid.Row="4"
+                Content="Delete Path" Margin="20,10,10,10" 
+                 />
+
 
     </Grid>
 </Window>
