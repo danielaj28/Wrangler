@@ -20,6 +20,8 @@ namespace Wrangler
 		public static int totalFiles = 0;
 		public static int processedFiles = 0;
 		public static int verifiedFiles = 0;
+		public static Queue<Tuple<string, string>> verificationQueue = new Queue<Tuple<string, string>>();
+		public static List<Thread> threads = new List<Thread>();
 
 		public MainWindow()
 		{
@@ -42,6 +44,10 @@ namespace Wrangler
 			}
 
 			cbxPreset.ItemsSource = presets;
+
+			Thread tv = new Thread(() => Verification(this));
+			tv.Start();
+			threads.Add(tv);
 		}
 
 		/// <summary>
@@ -167,8 +173,6 @@ namespace Wrangler
 					throw new Exception("Unable to get list of files from source device", inner);
 				}
 
-				List<Thread> threads = new List<Thread>();
-
 				//Copy
 				totalFiles = sourceFilePaths.Count * targetPreset.paths.Count;
 
@@ -184,7 +188,7 @@ namespace Wrangler
 
 				foreach (var destinationPath in targetPreset.paths)
 				{
-					Thread t = new Thread(() => CopyAndVerify(sourceFilePaths, destinationPath, this));
+					Thread t = new Thread(() => Copy(sourceFilePaths, destinationPath, this));
 					t.Start();
 					threads.Add(t);
 				}
@@ -196,9 +200,9 @@ namespace Wrangler
 			}
 		}
 
-		private void CopyAndVerify(List<string> sourceFilePaths, string destinationPath, MainWindow mw)
+		private void Copy(List<string> sourceFilePaths, string destinationPath, MainWindow mw)
 		{
-			using (var encryption = MD5.Create())
+			try
 			{
 				foreach (string sourceFilePath in sourceFilePaths)
 				{
@@ -210,31 +214,82 @@ namespace Wrangler
 					Directory.CreateDirectory(directoryPathToCreate);
 					File.Copy(sourceFilePath, filePathDestination);
 					IncrementProgress(mw, "copy");
+					verificationQueue.Enqueue(new Tuple<string, string>(sourceFilePath, filePathDestination));
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, String.Format("Error whilst copying to {0}", destinationPath));
+				IncrementProgress(mw, "finish");
+			}
+		}
 
-					string sourceHash;
-					string destinationHash;
-
-					if (hashCache.ContainsKey(sourceFilePath))
+		private void Verification(MainWindow mw)
+		{
+			using (var encryption = MD5.Create())
+			{
+				while (true)
+				{
+					Tuple<string, string> hashCheck;
+					try
 					{
-						sourceHash = hashCache[sourceFilePath];
+						hashCheck = verificationQueue.Dequeue();
+					}
+					catch (InvalidOperationException)
+					{
+						hashCheck = null;
+					}
+
+					if (hashCheck == null)
+					{
+						Thread.Sleep(500);
 					}
 					else
 					{
-						using (var stream = File.OpenRead(sourceFilePath))
+						int retryAttempt = 2;
+						while (retryAttempt > 0)
 						{
-							sourceHash = encryption.ComputeHash(stream).ToString();
-							hashCache[sourceFilePath] = sourceHash;
+							try
+							{
+								string sourceFilePath = hashCheck.Item1;
+								string filePathDestination = hashCheck.Item2;
+
+								string sourceHash;
+								string destinationHash;
+
+								if (hashCache.ContainsKey(sourceFilePath))
+								{
+									lock (hashCache)
+									{
+										sourceHash = hashCache[sourceFilePath];
+									}
+								}
+								else
+								{
+									using (var stream = File.OpenRead(sourceFilePath))
+									{
+										sourceHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
+										hashCache[sourceFilePath] = sourceHash;
+									}
+								}
+
+								using (var stream = File.OpenRead(filePathDestination))
+								{
+									destinationHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
+								}
+
+								if (sourceHash == destinationHash)
+								{
+									IncrementProgress(mw, "verify");
+								}
+								break;
+							}
+							catch (Exception ex)
+							{
+								Thread.Sleep(100);
+								retryAttempt--;
+							}
 						}
-					}
-
-					using (var stream = File.OpenRead(filePathDestination))
-					{
-						destinationHash = encryption.ComputeHash(stream).ToString();
-					}
-
-					if (sourceHash == destinationHash)
-					{
-						IncrementProgress(mw, "verify");
 					}
 				}
 			}
@@ -291,6 +346,12 @@ namespace Wrangler
 							{
 								btnStart.IsEnabled = true;
 							}
+						});
+						break;
+					case "finish":
+						Dispatcher.Invoke(() =>
+						{
+							mw.btnStart.IsEnabled = true;
 						});
 						break;
 				}
