@@ -22,6 +22,7 @@ namespace Wrangler
 		public static int verifiedFiles = 0;
 		public static Queue<Tuple<string, string>> verificationQueue = new Queue<Tuple<string, string>>();
 		public static List<Thread> threads = new List<Thread>();
+		public static Boolean running = true;
 
 		public MainWindow()
 		{
@@ -206,6 +207,10 @@ namespace Wrangler
 			{
 				foreach (string sourceFilePath in sourceFilePaths)
 				{
+					if (!running)
+					{
+						break;
+					}
 					string relativeFilePath = sourceFilePath.Substring(sourceFilePath.IndexOf("\\", 0), sourceFilePath.Length - sourceFilePath.IndexOf("\\", 0));
 					string middlePath = relativeFilePath.Substring(0, relativeFilePath.LastIndexOf("\\"));
 					string directoryPathToCreate = destinationPath + middlePath;
@@ -226,72 +231,78 @@ namespace Wrangler
 
 		private void Verification(MainWindow mw)
 		{
-			using (var encryption = MD5.Create())
+			try
 			{
-				while (true)
+				using (var encryption = MD5.Create())
 				{
-					Tuple<string, string> hashCheck;
-					try
+					while (running)
 					{
-						hashCheck = verificationQueue.Dequeue();
-					}
-					catch (InvalidOperationException)
-					{
-						hashCheck = null;
-					}
-
-					if (hashCheck == null)
-					{
-						Thread.Sleep(500);
-					}
-					else
-					{
-						int retryAttempt = 2;
-						while (retryAttempt > 0)
+						Tuple<string, string> hashCheck;
+						try
 						{
-							try
+							hashCheck = verificationQueue.Dequeue();
+						}
+						catch (InvalidOperationException)
+						{
+							hashCheck = null;
+						}
+
+						if (hashCheck == null)
+						{
+							Thread.Sleep(500);
+						}
+						else
+						{
+							int retryAttempt = 2;
+							while (retryAttempt > 0)
 							{
-								string sourceFilePath = hashCheck.Item1;
-								string filePathDestination = hashCheck.Item2;
-
-								string sourceHash;
-								string destinationHash;
-
-								if (hashCache.ContainsKey(sourceFilePath))
+								try
 								{
-									lock (hashCache)
+									string sourceFilePath = hashCheck.Item1;
+									string filePathDestination = hashCheck.Item2;
+
+									string sourceHash;
+									string destinationHash;
+
+									if (hashCache.ContainsKey(sourceFilePath))
 									{
-										sourceHash = hashCache[sourceFilePath];
+										lock (hashCache)
+										{
+											sourceHash = hashCache[sourceFilePath];
+										}
 									}
-								}
-								else
-								{
-									using (var stream = File.OpenRead(sourceFilePath))
+									else
 									{
-										sourceHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
-										hashCache[sourceFilePath] = sourceHash;
+										using (var stream = File.OpenRead(sourceFilePath))
+										{
+											sourceHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
+											hashCache[sourceFilePath] = sourceHash;
+										}
 									}
-								}
 
-								using (var stream = File.OpenRead(filePathDestination))
-								{
-									destinationHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
-								}
+									using (var stream = File.OpenRead(filePathDestination))
+									{
+										destinationHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
+									}
 
-								if (sourceHash == destinationHash)
-								{
-									IncrementProgress(mw, "verify");
+									if (sourceHash == destinationHash)
+									{
+										IncrementProgress(mw, "verify");
+									}
+									break;
 								}
-								break;
-							}
-							catch (Exception ex)
-							{
-								Thread.Sleep(100);
-								retryAttempt--;
+								catch (Exception ex)
+								{
+									Thread.Sleep(100);
+									retryAttempt--;
+								}
 							}
 						}
 					}
 				}
+			}
+			catch (Exception)
+			{
 			}
 		}
 
@@ -315,47 +326,62 @@ namespace Wrangler
 
 		public void IncrementProgress(MainWindow mw, string type)
 		{
-			lock (mw)
+			try
 			{
-				switch (type)
+				lock (mw)
 				{
-					case "copy":
-						processedFiles++;
-						Dispatcher.Invoke(() =>
-						{
-							mw.pbr1.Value = processedFiles;
-
-							decimal percentage = ((decimal)processedFiles / (decimal)totalFiles) * 100;
-							percentage = Math.Round(percentage);
-
-							mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
-						});
-						break;
-					case "verify":
-						verifiedFiles++;
-						Dispatcher.Invoke(() =>
-						{
-							mw.pbrVerified.Value = verifiedFiles;
-
-							decimal percentage = ((decimal)verifiedFiles / (decimal)totalFiles) * 100;
-							percentage = Math.Round(percentage);
-
-							mw.txtVerificationProgress.Text = string.Format("{0}% {1}/{2} verified", percentage, verifiedFiles, totalFiles);
-
-							if (totalFiles == verifiedFiles)
+					switch (type)
+					{
+						case "copy":
+							processedFiles++;
+							Dispatcher.Invoke(() =>
 							{
-								btnStart.IsEnabled = true;
-							}
-						});
-						break;
-					case "finish":
-						Dispatcher.Invoke(() =>
-						{
-							mw.btnStart.IsEnabled = true;
-						});
-						break;
-				}
+								mw.pbr1.Value = processedFiles;
 
+								decimal percentage = ((decimal)processedFiles / (decimal)totalFiles) * 100;
+								percentage = Math.Round(percentage);
+
+								mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
+							});
+							break;
+						case "verify":
+							verifiedFiles++;
+							Dispatcher.Invoke(() =>
+							{
+								mw.pbrVerified.Value = verifiedFiles;
+
+								decimal percentage = ((decimal)verifiedFiles / (decimal)totalFiles) * 100;
+								percentage = Math.Round(percentage);
+
+								mw.txtVerificationProgress.Text = string.Format("{0}% {1}/{2} verified", percentage, verifiedFiles, totalFiles);
+
+								if (totalFiles == verifiedFiles)
+								{
+									btnStart.IsEnabled = true;
+								}
+							});
+							break;
+						case "finish":
+							Dispatcher.Invoke(() =>
+							{
+								mw.btnStart.IsEnabled = true;
+							});
+							break;
+					}
+
+				}
+			}
+			catch (Exception)
+			{
+			}
+		}
+
+		private void Window_Closed(object sender, EventArgs e)
+		{
+			foreach (var thread in threads)
+			{
+				running = false;
+				thread.Interrupt();
 			}
 		}
 	}

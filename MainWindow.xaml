@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Wrangler"
         mc:Ignorable="d"
         FontSize="18"
-        Title="Wrangler" Height="389" Width="629">
+        Title="Wrangler" Height="389" Width="629" Closed="Window_Closed">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
