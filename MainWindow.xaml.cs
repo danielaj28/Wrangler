@@ -5,7 +5,7 @@ using System.Threading;
 using System.Windows;
 using System.Xml;
 using System.Xml.Serialization;
-using Newtonsoft.Json;
+using System.Security.Cryptography;
 
 namespace Wrangler
 {
@@ -16,8 +16,10 @@ namespace Wrangler
 	{
 		public static List<Device> devices = new List<Device>();
 		public static List<Preset> presets = new List<Preset>();
+		public static Dictionary<string, string> hashCache = new Dictionary<string, string>();
 		public static int totalFiles = 0;
 		public static int processedFiles = 0;
+		public static int verifiedFiles = 0;
 
 		public MainWindow()
 		{
@@ -32,20 +34,15 @@ namespace Wrangler
 				name = "Test"
 			};
 
-
-
 			presets = DeSerializeObject<List<Preset>>("presets.xml");
+
 			if (presets == null)
 			{
 				presets = new List<Preset>();
-
 			}
 
 			cbxPreset.ItemsSource = presets;
-
 		}
-
-
 
 		/// <summary>
 		/// Serializes an object.
@@ -74,7 +71,6 @@ namespace Wrangler
 				//Log exception here
 			}
 		}
-
 
 		/// <summary>
 		/// Deserializes an xml file into an object list
@@ -164,36 +160,67 @@ namespace Wrangler
 			List<Thread> threads = new List<Thread>();
 
 			//Copy
-			processedFiles = 0;
 			totalFiles = sourceFilePaths.Count * targetPreset.paths.Count;
+
+			processedFiles = 0;
 			pbr1.Maximum = totalFiles;
 			txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
+
+			verifiedFiles = 0;
+			pbrVerified.Maximum = totalFiles;
+			txtVerificationProgress.Text = string.Format("0% {0}/{1} verified", verifiedFiles, totalFiles);
+
 			btnStart.IsEnabled = false;
 
 			foreach (var destinationPath in targetPreset.paths)
 			{
-				Thread t = new Thread(() => Copy(sourceFilePaths, destinationPath, this));
+				Thread t = new Thread(() => CopyAndVerify(sourceFilePaths, destinationPath, this));
 				t.Start();
 				threads.Add(t);
 			}
-
-			//Verify
-
-
 		}
 
-		private void Copy(List<string> sourceFilePaths, string destinationPath, MainWindow mw)
+		private void CopyAndVerify(List<string> sourceFilePaths, string destinationPath, MainWindow mw)
 		{
-			foreach (string sourceFilePath in sourceFilePaths)
+			using (var encryption = MD5.Create())
 			{
-				string relativeFilePath = sourceFilePath.Substring(sourceFilePath.IndexOf("\\", 0), sourceFilePath.Length - sourceFilePath.IndexOf("\\", 0));
-				string middlePath = relativeFilePath.Substring(0, relativeFilePath.LastIndexOf("\\"));
-				string directoryPathToCreate = destinationPath + middlePath;
-				string filePathDestination = destinationPath + relativeFilePath;
+				foreach (string sourceFilePath in sourceFilePaths)
+				{
+					string relativeFilePath = sourceFilePath.Substring(sourceFilePath.IndexOf("\\", 0), sourceFilePath.Length - sourceFilePath.IndexOf("\\", 0));
+					string middlePath = relativeFilePath.Substring(0, relativeFilePath.LastIndexOf("\\"));
+					string directoryPathToCreate = destinationPath + middlePath;
+					string filePathDestination = destinationPath + relativeFilePath;
 
-				Directory.CreateDirectory(directoryPathToCreate);
-				File.Copy(sourceFilePath, filePathDestination);
-				IncrementProgress(mw);
+					Directory.CreateDirectory(directoryPathToCreate);
+					File.Copy(sourceFilePath, filePathDestination);
+					IncrementProgress(mw, "copy");
+
+					string sourceHash;
+					string destinationHash;
+
+					if (hashCache.ContainsKey(sourceFilePath))
+					{
+						sourceHash = hashCache[sourceFilePath];
+					}
+					else
+					{
+						using (var stream = File.OpenRead(sourceFilePath))
+						{
+							sourceHash = encryption.ComputeHash(stream).ToString();
+							hashCache[sourceFilePath] = sourceHash;
+						}
+					}
+
+					using (var stream = File.OpenRead(filePathDestination))
+					{
+						destinationHash = encryption.ComputeHash(stream).ToString();
+					}
+
+					if (sourceHash == destinationHash)
+					{
+						IncrementProgress(mw, "verify");
+					}
+				}
 			}
 		}
 
@@ -215,25 +242,43 @@ namespace Wrangler
 			SerializeObject<List<Preset>>(presets, "presets.xml");
 		}
 
-		public void IncrementProgress(MainWindow mw)
+		public void IncrementProgress(MainWindow mw, string type)
 		{
 			lock (mw)
 			{
-				processedFiles++;
-				Dispatcher.Invoke(() =>
+				switch (type)
 				{
-					mw.pbr1.Value = processedFiles;
+					case "copy":
+						processedFiles++;
+						Dispatcher.Invoke(() =>
+						{
+							mw.pbr1.Value = processedFiles;
 
-					decimal percentage = ((decimal)processedFiles / (decimal)totalFiles) * 100;
-					percentage = Math.Round(percentage);
+							decimal percentage = ((decimal)processedFiles / (decimal)totalFiles) * 100;
+							percentage = Math.Round(percentage);
 
-					mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
+							mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
+						});
+						break;
+					case "verify":
+						verifiedFiles++;
+						Dispatcher.Invoke(() =>
+						{
+							mw.pbrVerified.Value = verifiedFiles;
 
-					if (totalFiles == processedFiles)
-					{
-						btnStart.IsEnabled = true;
-					}
-				});
+							decimal percentage = ((decimal)verifiedFiles / (decimal)totalFiles) * 100;
+							percentage = Math.Round(percentage);
+
+							mw.txtVerificationProgress.Text = string.Format("{0}% {1}/{2} verified", percentage, verifiedFiles, totalFiles);
+
+							if (totalFiles == verifiedFiles)
+							{
+								btnStart.IsEnabled = true;
+							}
+						});
+						break;
+				}
+
 			}
 		}
 	}
