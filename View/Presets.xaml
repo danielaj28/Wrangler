@@ -54,7 +54,12 @@
 
         <TextBlock Grid.Column="2" Grid.Row="1" Text="Paths:" Margin="20,0,0,0" />
 
-        <TextBox x:Name="txtPaths" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="20,0,0,0" AcceptsReturn="True" LostFocus="txtPaths_LostFocus"/>
+        <TextBox x:Name="txtPaths" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="20,0,0,0" AcceptsReturn="True"/>
+
+        <Button x:Name="btnSaveAll" Grid.Column="2" Grid.Row="4"
+                Content="Save All" Margin="10" Click="btnSaveAll_Click" 
+                 />
+        
 
 
     </Grid>

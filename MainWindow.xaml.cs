@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Xml;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace Wrangler
 {
@@ -15,7 +18,7 @@ namespace Wrangler
 		public static List<Preset> presets = new List<Preset>();
 		public static int totalFiles = 0;
 		public static int processedFiles = 0;
-		
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -29,12 +32,85 @@ namespace Wrangler
 				name = "Test"
 			};
 
-			p.paths.Add(@"G:\wrangler\a");
-			p.paths.Add(@"G:\wrangler\b");
-			presets.Add(p);
+
+
+			presets = DeSerializeObject<List<Preset>>("presets.xml");
+			if (presets == null)
+			{
+				presets = new List<Preset>();
+
+			}
 
 			cbxPreset.ItemsSource = presets;
 
+		}
+
+
+
+		/// <summary>
+		/// Serializes an object.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="serializableObject"></param>
+		/// <param name="fileName"></param>
+		public void SerializeObject<T>(T serializableObject, string fileName)
+		{
+			if (serializableObject == null) { return; }
+
+			try
+			{
+				XmlDocument xmlDocument = new XmlDocument();
+				XmlSerializer serializer = new XmlSerializer(serializableObject.GetType());
+				using (MemoryStream stream = new MemoryStream())
+				{
+					serializer.Serialize(stream, serializableObject);
+					stream.Position = 0;
+					xmlDocument.Load(stream);
+					xmlDocument.Save(fileName);
+				}
+			}
+			catch (Exception ex)
+			{
+				//Log exception here
+			}
+		}
+
+
+		/// <summary>
+		/// Deserializes an xml file into an object list
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		public T DeSerializeObject<T>(string fileName)
+		{
+			if (string.IsNullOrEmpty(fileName)) { return default(T); }
+
+			T objectOut = default(T);
+
+			try
+			{
+				XmlDocument xmlDocument = new XmlDocument();
+				xmlDocument.Load(fileName);
+				string xmlString = xmlDocument.OuterXml;
+
+				using (StringReader read = new StringReader(xmlString))
+				{
+					Type outType = typeof(T);
+
+					XmlSerializer serializer = new XmlSerializer(outType);
+					using (XmlReader reader = new XmlTextReader(read))
+					{
+						objectOut = (T)serializer.Deserialize(reader);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				//Log exception here
+			}
+
+			return objectOut;
 		}
 
 		private void UpdateDriveList()
@@ -44,13 +120,14 @@ namespace Wrangler
 
 			foreach (DriveInfo drive in drives)
 			{
-				if (!drive.DriveType.Equals(DriveType.Network)&& !drive.DriveType.Equals(DriveType.Fixed))
+				if (!drive.DriveType.Equals(DriveType.Network) && !drive.DriveType.Equals(DriveType.Fixed))
 				{
-					devices.Add(new Device { 
-						driveLetter = drive.Name, 
+					devices.Add(new Device
+					{
+						driveLetter = drive.Name,
 						name = drive.VolumeLabel,
-						used = (drive.TotalSize-drive.TotalFreeSpace)/1024 /1024,
-						total=drive.TotalSize/1024/1024 
+						used = (drive.TotalSize - drive.TotalFreeSpace) / 1024 / 1024,
+						total = drive.TotalSize / 1024 / 1024
 					});
 				}
 			}
@@ -66,7 +143,7 @@ namespace Wrangler
 		{
 			Device sourceDevice = (Device)cbxSources.SelectedItem;
 
-			if (sourceDevice==null)
+			if (sourceDevice == null)
 			{
 				MessageBox.Show("Need to select a removable drive to copy from.");
 				return;
@@ -74,7 +151,7 @@ namespace Wrangler
 
 			Preset targetPreset = (Preset)cbxPreset.SelectedItem;
 
-			if (targetPreset == null || targetPreset.paths.Count==0)
+			if (targetPreset == null || targetPreset.paths.Count == 0)
 			{
 				MessageBox.Show("Need to select a preset to copy too.");
 				return;
@@ -95,7 +172,7 @@ namespace Wrangler
 
 			foreach (var destinationPath in targetPreset.paths)
 			{
-				Thread t = new Thread(()=> Copy(sourceFilePaths, destinationPath, this));
+				Thread t = new Thread(() => Copy(sourceFilePaths, destinationPath, this));
 				t.Start();
 				threads.Add(t);
 			}
@@ -105,7 +182,7 @@ namespace Wrangler
 
 		}
 
-		private void Copy(List<string> sourceFilePaths,string destinationPath, MainWindow mw)
+		private void Copy(List<string> sourceFilePaths, string destinationPath, MainWindow mw)
 		{
 			foreach (string sourceFilePath in sourceFilePaths)
 			{
@@ -135,6 +212,7 @@ namespace Wrangler
 		public void UpdatePresets()
 		{
 			cbxPreset.Items.Refresh();
+			SerializeObject<List<Preset>>(presets, "presets.xml");
 		}
 
 		public void IncrementProgress(MainWindow mw)
@@ -151,11 +229,11 @@ namespace Wrangler
 
 					mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
 
-					if (totalFiles==processedFiles)
+					if (totalFiles == processedFiles)
 					{
 						btnStart.IsEnabled = true;
 					}
-				});			
+				});
 			}
 		}
 	}

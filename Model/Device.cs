@@ -14,7 +14,7 @@ namespace Wrangler
 		{
 			get
 			{
-				return $"{name} {driveLetter} {Math.Round(used/1024,2)} GB used of {Math.Round(total / 1024, 2)} GB";
+				return $"{name} {driveLetter} {Math.Round(used / 1024, 2)} GB used of {Math.Round(total / 1024, 2)} GB";
 			}
 		}
 	}
