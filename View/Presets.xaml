@@ -56,7 +56,7 @@
 
         <TextBox x:Name="txtPaths" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="20,0,0,0" AcceptsReturn="True"/>
 
-        <Button x:Name="btnSaveAll" Grid.Column="2" Grid.Row="4"
+        <Button x:Name="btnSaveAll" Grid.Column="2" Grid.Row="5"
                 Content="Save All" Margin="10" Click="btnSaveAll_Click" 
                  />
         
