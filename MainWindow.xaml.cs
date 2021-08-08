@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -12,6 +13,8 @@ namespace Wrangler
 	{
 		public static List<Device> devices = new List<Device>();
 		public static List<Preset> presets = new List<Preset>();
+		public static int totalFiles = 0;
+		public static int processedFiles = 0;
 		
 		public MainWindow()
 		{
@@ -82,10 +85,17 @@ namespace Wrangler
 			sourceFilePaths.AddRange(GetAllFiles(sourceDevice.driveLetter));
 
 			List<Thread> threads = new List<Thread>();
+
 			//Copy
+			processedFiles = 0;
+			totalFiles = sourceFilePaths.Count * targetPreset.paths.Count;
+			pbr1.Maximum = totalFiles;
+			txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
+			btnStart.IsEnabled = false;
+
 			foreach (var destinationPath in targetPreset.paths)
 			{
-				Thread t = new Thread(()=> Copy(sourceFilePaths, destinationPath));
+				Thread t = new Thread(()=> Copy(sourceFilePaths, destinationPath, this));
 				t.Start();
 				threads.Add(t);
 			}
@@ -95,7 +105,7 @@ namespace Wrangler
 
 		}
 
-		private void Copy(List<string> sourceFilePaths,string destinationPath)
+		private void Copy(List<string> sourceFilePaths,string destinationPath, MainWindow mw)
 		{
 			foreach (string sourceFilePath in sourceFilePaths)
 			{
@@ -106,6 +116,7 @@ namespace Wrangler
 
 				Directory.CreateDirectory(directoryPathToCreate);
 				File.Copy(sourceFilePath, filePathDestination);
+				IncrementProgress(mw);
 			}
 		}
 
@@ -124,6 +135,28 @@ namespace Wrangler
 		public void UpdatePresets()
 		{
 			cbxPreset.Items.Refresh();
+		}
+
+		public void IncrementProgress(MainWindow mw)
+		{
+			lock (mw)
+			{
+				processedFiles++;
+				Dispatcher.Invoke(() =>
+				{
+					mw.pbr1.Value = processedFiles;
+
+					decimal percentage = ((decimal)processedFiles / (decimal)totalFiles) * 100;
+					percentage = Math.Round(percentage);
+
+					mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
+
+					if (totalFiles==processedFiles)
+					{
+						btnStart.IsEnabled = true;
+					}
+				});			
+			}
 		}
 	}
 }
