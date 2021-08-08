@@ -137,46 +137,62 @@ namespace Wrangler
 
 		private void btnStart_Click(object sender, RoutedEventArgs e)
 		{
-			Device sourceDevice = (Device)cbxSources.SelectedItem;
-
-			if (sourceDevice == null)
+			try
 			{
-				MessageBox.Show("Need to select a removable drive to copy from.");
-				return;
+				Device sourceDevice = (Device)cbxSources.SelectedItem;
+
+				if (sourceDevice == null)
+				{
+					MessageBox.Show("Need to select a removable drive to copy from.");
+					return;
+				}
+
+				Preset targetPreset = (Preset)cbxPreset.SelectedItem;
+
+				if (targetPreset == null || targetPreset.paths.Count == 0)
+				{
+					MessageBox.Show("Need to select a preset to copy too.");
+					return;
+				}
+
+				List<string> sourceFilePaths = new List<string>();
+
+				try
+				{
+					sourceFilePaths.AddRange(GetAllFiles(sourceDevice.driveLetter));
+				}
+				catch (Exception inner)
+				{
+					UpdateDriveList();
+					throw new Exception("Unable to get list of files from source device", inner);
+				}
+
+				List<Thread> threads = new List<Thread>();
+
+				//Copy
+				totalFiles = sourceFilePaths.Count * targetPreset.paths.Count;
+
+				processedFiles = 0;
+				pbr1.Maximum = totalFiles;
+				txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
+
+				verifiedFiles = 0;
+				pbrVerified.Maximum = totalFiles;
+				txtVerificationProgress.Text = string.Format("0% {0}/{1} verified", verifiedFiles, totalFiles);
+
+				btnStart.IsEnabled = false;
+
+				foreach (var destinationPath in targetPreset.paths)
+				{
+					Thread t = new Thread(() => CopyAndVerify(sourceFilePaths, destinationPath, this));
+					t.Start();
+					threads.Add(t);
+				}
 			}
-
-			Preset targetPreset = (Preset)cbxPreset.SelectedItem;
-
-			if (targetPreset == null || targetPreset.paths.Count == 0)
+			catch (Exception ex)
 			{
-				MessageBox.Show("Need to select a preset to copy too.");
-				return;
-			}
-
-			List<string> sourceFilePaths = new List<string>();
-
-			sourceFilePaths.AddRange(GetAllFiles(sourceDevice.driveLetter));
-
-			List<Thread> threads = new List<Thread>();
-
-			//Copy
-			totalFiles = sourceFilePaths.Count * targetPreset.paths.Count;
-
-			processedFiles = 0;
-			pbr1.Maximum = totalFiles;
-			txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
-
-			verifiedFiles = 0;
-			pbrVerified.Maximum = totalFiles;
-			txtVerificationProgress.Text = string.Format("0% {0}/{1} verified", verifiedFiles, totalFiles);
-
-			btnStart.IsEnabled = false;
-
-			foreach (var destinationPath in targetPreset.paths)
-			{
-				Thread t = new Thread(() => CopyAndVerify(sourceFilePaths, destinationPath, this));
-				t.Start();
-				threads.Add(t);
+				MessageBox.Show(ex.Message, "An error occured");
+				btnStart.IsEnabled = true;
 			}
 		}
 
