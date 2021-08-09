@@ -4,14 +4,16 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
+    <Copyright>Daniel Ward</Copyright>
+    <PackageProjectUrl>https://github.com/danielaj28/Wrangler</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/danielaj28/Wrangler</RepositoryUrl>
+    <NeutralLanguage>en-GB</NeutralLanguage>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="ViewModel\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
