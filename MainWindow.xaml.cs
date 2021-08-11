@@ -6,6 +6,7 @@ using System.Windows;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Security.Cryptography;
+using Standart.Hash.xxHash;
 
 namespace Wrangler
 {
@@ -252,69 +253,62 @@ namespace Wrangler
 		{
 			try
 			{
-				using (var encryption = MD5.Create())
+				while (running)
 				{
-					while (running)
+					Tuple<string, string> hashCheck;
+					try
 					{
-						Tuple<string, string> hashCheck;
-						try
-						{
-							hashCheck = verificationQueue.Dequeue();
-						}
-						catch (InvalidOperationException)
-						{
-							hashCheck = null;
-						}
+						hashCheck = verificationQueue.Dequeue();
+					}
+					catch (InvalidOperationException)
+					{
+						hashCheck = null;
+					}
 
-						if (hashCheck == null)
+					if (hashCheck == null)
+					{
+						Thread.Sleep(100);
+					}
+					else
+					{
+						int retryAttempt = 2;
+						while (retryAttempt > 0)
 						{
-							Thread.Sleep(500);
-						}
-						else
-						{
-							int retryAttempt = 2;
-							while (retryAttempt > 0)
+							try
 							{
-								try
+								string sourceFilePath = hashCheck.Item1;
+								string filePathDestination = hashCheck.Item2;
+
+								string sourceHash;
+								string destinationHash;
+
+								if (hashCache.ContainsKey(sourceFilePath))
 								{
-									string sourceFilePath = hashCheck.Item1;
-									string filePathDestination = hashCheck.Item2;
-
-									string sourceHash;
-									string destinationHash;
-
-									if (hashCache.ContainsKey(sourceFilePath))
+									lock (hashCache)
 									{
-										lock (hashCache)
-										{
-											sourceHash = hashCache[sourceFilePath];
-										}
+										sourceHash = hashCache[sourceFilePath];
 									}
-									else
-									{
-										using (var stream = File.OpenRead(sourceFilePath))
-										{
-											sourceHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
-											hashCache[sourceFilePath] = sourceHash;
-										}
-									}
-
-									using (var stream = File.OpenRead(filePathDestination))
-									{
-										destinationHash = System.Text.Encoding.Default.GetString(encryption.ComputeHash(stream));
-									}
-
-									if (sourceHash == destinationHash)
-									{
-										IncrementProgress(mw, "verify");
-									}
-									break;
 								}
-								catch (Exception ex)
+								else
 								{
-									Thread.Sleep(100);
-									retryAttempt--;
+									Byte[] sourceData = File.ReadAllBytes(sourceFilePath);
+									sourceHash = xxHash64.ComputeHash(sourceData, sourceData.Length).ToString();
+									hashCache[sourceFilePath] = sourceHash;
 								}
+
+								Byte[] destinationData = File.ReadAllBytes(filePathDestination);
+								destinationHash = xxHash64.ComputeHash(destinationData, destinationData.Length).ToString();
+
+								if (sourceHash == destinationHash)
+								{
+									IncrementProgress(mw, "verify");
+								}
+								break;
+							}
+							catch (Exception ex)
+							{
+								Thread.Sleep(100);
+								retryAttempt--;
 							}
 						}
 					}
