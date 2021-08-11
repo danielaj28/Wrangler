@@ -150,6 +150,10 @@ namespace Wrangler
 				}
 			}
 			cbxSources.Items.Refresh();
+			if (cbxSources.Items.Count > 0)
+			{
+				cbxSources.SelectedIndex = 0;
+			}
 		}
 
 		private void btnDeviceRefresh_Click(object sender, RoutedEventArgs e)
