@@ -273,13 +273,16 @@ namespace Wrangler
 					}
 					else
 					{
-						int retryAttempt = 2;
+						int retryAttempt = 4;
 						while (retryAttempt > 0)
 						{
+							string sourceFilePath = "";
+							string filePathDestination = "";
+
 							try
 							{
-								string sourceFilePath = hashCheck.Item1;
-								string filePathDestination = hashCheck.Item2;
+								sourceFilePath = hashCheck.Item1;
+								filePathDestination = hashCheck.Item2;
 
 								string sourceHash;
 								string destinationHash;
@@ -309,8 +312,13 @@ namespace Wrangler
 							}
 							catch (Exception ex)
 							{
-								Thread.Sleep(100);
+								Thread.Sleep(500);
 								retryAttempt--;
+
+								if (retryAttempt == 0)
+								{
+									MessageBox.Show(String.Format("Unable to verify file {0} -> {1} Error: {2}", sourceFilePath, filePathDestination, ex.Message), "Unable to verify file", MessageBoxButton.OK, MessageBoxImage.Error);
+								}
 							}
 						}
 					}
