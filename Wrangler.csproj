@@ -10,6 +10,7 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <SignAssembly>false</SignAssembly>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
