@@ -255,8 +255,23 @@ namespace Wrangler
 		{
 			try
 			{
+				Boolean waiting = true;
+
 				while (running)
 				{
+
+					while (waiting)
+					{
+						if (verificationQueue.Count < totalFiles || totalFiles == 0)
+						{
+							Thread.Sleep(1000);
+						}
+						else
+						{
+							waiting = false;
+						}
+					}
+
 					Tuple<string, string> hashCheck;
 					try
 					{
@@ -322,6 +337,8 @@ namespace Wrangler
 							}
 						}
 					}
+
+					waiting = (verificationQueue.Count == 0);
 				}
 			}
 			catch (Exception)
