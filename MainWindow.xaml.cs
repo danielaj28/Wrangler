@@ -199,10 +199,12 @@ namespace Wrangler
 
 				processedFiles = 0;
 				pbr1.Maximum = totalFiles;
+				pbr1.Value = processedFiles;
 				txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
 
 				verifiedFiles = 0;
 				pbrVerified.Maximum = totalFiles;
+				pbrVerified.Value = verifiedFiles;
 				txtVerificationProgress.Text = string.Format("0% {0}/{1} verified", verifiedFiles, totalFiles);
 
 				btnStart.IsEnabled = false;
