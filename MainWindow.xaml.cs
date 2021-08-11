@@ -26,36 +26,44 @@ namespace Wrangler
 
 		public MainWindow()
 		{
-			InitializeComponent();
-
-			cbxSources.ItemsSource = devices;
-
-			UpdateDriveList();
-
-			var p = new Preset
-			{
-				name = "Test"
-			};
-
 			try
 			{
-				presets = DeSerializeObject<List<Preset>>("presets.xml");
+				InitializeComponent();
+
+				cbxSources.ItemsSource = devices;
+
+				UpdateDriveList();
+
+				var p = new Preset
+				{
+					name = "Test"
+				};
+
+				try
+				{
+					presets = DeSerializeObject<List<Preset>>("presets.xml");
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(String.Format("Unable to load presets from file: {0}", ex.Message), "Unable to load presets", MessageBoxButton.OK, MessageBoxImage.Error);
+				}
+
+				if (presets == null)
+				{
+					presets = new List<Preset>();
+				}
+
+				cbxPreset.ItemsSource = presets;
+
+				Thread tv = new Thread(() => Verification(this));
+				tv.Start();
+				threads.Add(tv);
 			}
-			catch (Exception ex)
+			catch (Exception ex2)
 			{
-				MessageBox.Show(String.Format("Unable to load presets from file: {0}", ex.Message), "Unable to load presets", MessageBoxButton.OK, MessageBoxImage.Error);
+				MessageBox.Show(String.Format("There was an unexpected error: {0}", ex2.Message), "Unexpected error", MessageBoxButton.OK, MessageBoxImage.Error);
+				throw;
 			}
-
-			if (presets == null)
-			{
-				presets = new List<Preset>();
-			}
-
-			cbxPreset.ItemsSource = presets;
-
-			Thread tv = new Thread(() => Verification(this));
-			tv.Start();
-			threads.Add(tv);
 		}
 
 		/// <summary>
