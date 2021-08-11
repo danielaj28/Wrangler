@@ -37,7 +37,14 @@ namespace Wrangler
 				name = "Test"
 			};
 
-			presets = DeSerializeObject<List<Preset>>("presets.xml");
+			try
+			{
+				presets = DeSerializeObject<List<Preset>>("presets.xml");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(String.Format("Unable to load presets from file: {0}", ex.Message), "Unable to load presets", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
 
 			if (presets == null)
 			{
@@ -321,7 +328,14 @@ namespace Wrangler
 		public void UpdatePresets()
 		{
 			cbxPreset.Items.Refresh();
-			SerializeObject<List<Preset>>(presets, "presets.xml");
+			try
+			{
+				SerializeObject<List<Preset>>(presets, "presets.xml");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(String.Format("Unable to save presets to file: {0}", ex.Message), "Unable to save presets", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
 		}
 
 		public void IncrementProgress(MainWindow mw, string type)
