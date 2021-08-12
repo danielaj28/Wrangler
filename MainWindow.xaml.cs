@@ -143,7 +143,7 @@ namespace Wrangler
 
 			foreach (DriveInfo drive in drives)
 			{
-				if (!drive.DriveType.Equals(DriveType.Network) && !drive.DriveType.Equals(DriveType.Fixed))
+				if (!drive.DriveType.Equals(DriveType.Network) && !drive.DriveType.Equals(DriveType.Fixed) && drive.IsReady)
 				{
 					devices.Add(new Device
 					{
