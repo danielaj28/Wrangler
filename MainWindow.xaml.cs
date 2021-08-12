@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Security.Cryptography;
 using Standart.Hash.xxHash;
+using System.Windows.Media;
 
 namespace Wrangler
 {
@@ -199,13 +200,17 @@ namespace Wrangler
 
 				processedFiles = 0;
 				pbr1.Maximum = totalFiles;
+				pbr1.Foreground = Brushes.Yellow;
 				pbr1.Value = processedFiles;
 				txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
 
 				verifiedFiles = 0;
 				pbrVerified.Maximum = totalFiles;
+				pbrVerified.Foreground = Brushes.Yellow;
 				pbrVerified.Value = verifiedFiles;
 				txtVerificationProgress.Text = string.Format("0% {0}/{1} verified", verifiedFiles, totalFiles);
+
+				verificationQueue.Clear();
 
 				btnStart.IsEnabled = false;
 
@@ -246,6 +251,7 @@ namespace Wrangler
 			}
 			catch (Exception ex)
 			{
+				IncrementProgress(mw, "copy-error");
 				MessageBox.Show(ex.Message, String.Format("Error whilst copying to {0}", destinationPath));
 				IncrementProgress(mw, "finish");
 			}
@@ -332,6 +338,11 @@ namespace Wrangler
 
 								if (retryAttempt == 0)
 								{
+									Dispatcher.Invoke(() =>
+									{
+										mw.pbrVerified.Foreground = Brushes.Red;
+										mw.btnStart.IsEnabled = true;
+									});
 									MessageBox.Show(String.Format("Unable to verify file {0} -> {1} Error: {2}", sourceFilePath, filePathDestination, ex.Message), "Unable to verify file", MessageBoxButton.OK, MessageBoxImage.Error);
 								}
 							}
@@ -341,8 +352,18 @@ namespace Wrangler
 					waiting = (verificationQueue.Count == 0);
 				}
 			}
-			catch (Exception)
+			catch (ThreadInterruptedException)
 			{
+
+			}
+			catch (Exception ex3)
+			{
+				Dispatcher.Invoke(() =>
+				{
+					mw.pbrVerified.Foreground = Brushes.Red;
+					btnStart.IsEnabled = true;
+				});
+				MessageBox.Show(String.Format("Issue during verification:{0}", ex3.Message), "Unable to verify files", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
 
@@ -389,6 +410,17 @@ namespace Wrangler
 								percentage = Math.Round(percentage);
 
 								mw.txtProgress.Text = string.Format("{0}% {1}/{2} copied", percentage, processedFiles, totalFiles);
+
+								if (processedFiles == totalFiles)
+								{
+									mw.pbr1.Foreground = Brushes.Green;
+								}
+							});
+							break;
+						case "copy-error":
+							Dispatcher.Invoke(() =>
+							{
+								mw.pbr1.Foreground = Brushes.Red;
 							});
 							break;
 						case "verify":
@@ -405,6 +437,8 @@ namespace Wrangler
 								if (totalFiles == verifiedFiles)
 								{
 									btnStart.IsEnabled = true;
+									mw.pbrVerified.Foreground = Brushes.Green;
+									MessageBox.Show("Copy and Verification Successfully Completed", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 								}
 							});
 							break;
@@ -418,8 +452,10 @@ namespace Wrangler
 
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				MessageBox.Show(String.Format("Unable to update progress: {0}", ex.Message), "Unable to update progress", MessageBoxButton.OK, MessageBoxImage.Error);
+				btnStart.IsEnabled = true;
 			}
 		}
 
