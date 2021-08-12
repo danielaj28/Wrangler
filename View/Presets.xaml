@@ -6,12 +6,20 @@
         xmlns:local="clr-namespace:Wrangler"
         mc:Ignorable="d"
         FontSize="18"
-        Title="Wrangler - Manage Presets" Height="450" Width="800">
+        Title="Wrangler - Manage Presets"
+        Foreground="White"
+        SizeToContent="WidthAndHeight">
+    <Window.Background>
+        <RadialGradientBrush>
+            <GradientStop Color="#FF4A585D" Offset="0"/>
+            <GradientStop Color="#FF343B3E" Offset="1"/>
+        </RadialGradientBrush>
+    </Window.Background>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="20" />
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="20" />
@@ -30,7 +38,7 @@
         <!--Source Selection-->
         <TextBlock Grid.Column="1" Grid.Row="1" Text="Presets:" />
 
-        <ListBox x:Name="listPresets2" Grid.Column="1" Grid.Row="2" FontSize="14" SelectionChanged="listPresets2_SelectionChanged">
+        <ListBox x:Name="listPresets2" Grid.Column="1" Grid.Row="2" FontSize="14" SelectionChanged="listPresets2_SelectionChanged" Margin="0,10,0,0">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
@@ -40,24 +48,26 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <TextBox x:Name="txtNewPreset" Grid.Column="1" Grid.Row="3" Margin="10" />
+        <TextBox x:Name="txtNewPreset" Grid.Column="1" Grid.Row="3" Margin="0,10,0,0" />
         
         <Button x:Name="btnAddPreset" Grid.Column="1" Grid.Row="4"
-                Content="Add Preset" Margin="10" Click="btnAddPreset_Click" 
-                 />
+                Content="Add Preset ➕" Margin="0,10,0,0" Click="btnAddPreset_Click" 
+                Background="#FF1EA56B" Foreground="White" BorderBrush="#FF4FD89D"/>
+        
         <Button x:Name="btnDeletePreset" Grid.Column="1" Grid.Row="5"
-                Content="Delete Preset" Margin="10" Click="btnDeletePreset_Click" 
-                 />
+                Content="Delete Preset 🚮" Margin="0,10,0,0" Click="btnDeletePreset_Click" 
+                Background="#FF1EA56B" Foreground="White" BorderBrush="#FF4FD89D"/>
         
         <!--Paths-->
 
 
-        <TextBlock Grid.Column="2" Grid.Row="1" Text="Paths:" Margin="20,0,0,0" />
+        <TextBlock Grid.Column="3" Grid.Row="1" Text="Paths:" />
 
-        <TextBox x:Name="txtPaths" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Margin="20,0,0,0" AcceptsReturn="True"/>
+        <TextBox x:Name="txtPaths" Grid.Column="3" Grid.Row="2" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="0,10,0,0" AcceptsReturn="True" MinWidth="450"/>
 
-        <Button x:Name="btnSaveAll" Grid.Column="2" Grid.Row="5"
-                Content="Save All" Margin="10" Click="btnSaveAll_Click" 
+        <Button x:Name="btnSaveAll" Grid.Column="3" Grid.Row="5" Grid.ColumnSpan="2"
+                Content="Save All" Margin="0,10,0,0" Click="btnSaveAll_Click"
+                Background="#FF1EA56B" Foreground="White" BorderBrush="#FF4FD89D"
                  />
         
 
