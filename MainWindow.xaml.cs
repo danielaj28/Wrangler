@@ -5,7 +5,6 @@ using System.Threading;
 using System.Windows;
 using System.Xml;
 using System.Xml.Serialization;
-using System.Security.Cryptography;
 using Standart.Hash.xxHash;
 using System.Windows.Media;
 
@@ -44,6 +43,10 @@ namespace Wrangler
 				try
 				{
 					presets = DeSerializeObject<List<Preset>>("presets.xml");
+				}
+				catch (FileNotFoundException)
+				{
+
 				}
 				catch (Exception ex)
 				{
@@ -92,7 +95,7 @@ namespace Wrangler
 			}
 			catch (Exception ex)
 			{
-				//Log exception here
+				throw ex;
 			}
 		}
 
@@ -127,7 +130,7 @@ namespace Wrangler
 			}
 			catch (Exception ex)
 			{
-				//Log exception here
+				throw ex;
 			}
 
 			return objectOut;
