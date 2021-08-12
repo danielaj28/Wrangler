@@ -43,7 +43,7 @@
             </ListBox>
 
         <Button x:Name="btnDeviceRefresh" Grid.Column="1" Grid.Row="3"
-                Content="Refresh" Margin="10" 
+                Content="Refresh ♻" Margin="10" 
                 Click="btnDeviceRefresh_Click" />
         
 
@@ -62,11 +62,11 @@
         </ComboBox>
 
         <Button x:Name="btnManagePresets" Grid.Column="2" Grid.Row="3"
-                Content="Manage" Margin="10" Click="btnManagePresets_Click" 
+                Content="🛠" Margin="10" Click="btnManagePresets_Click" 
                  />
 
         <!--Preset Selection and management-->
-        <Button x:Name="btnStart" Grid.Column="3" Grid.Row="1" Content="Start Wrangling" Grid.RowSpan="2" Margin="20,0,20,0" Click="btnStart_Click" />
+        <Button x:Name="btnStart" Grid.Column="3" Grid.Row="1" Content="Start Wrangling 🏁" Grid.RowSpan="2" Margin="20,0,20,0" Click="btnStart_Click" />
 
         
         <!--Progress status-->
