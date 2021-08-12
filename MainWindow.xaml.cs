@@ -320,13 +320,17 @@ namespace Wrangler
 								}
 								else
 								{
-									Byte[] sourceData = File.ReadAllBytes(sourceFilePath);
-									sourceHash = xxHash64.ComputeHash(sourceData, sourceData.Length).ToString();
-									hashCache[sourceFilePath] = sourceHash;
+									using (var stream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read))
+									{
+										sourceHash = xxHash64.ComputeHash(stream).ToString();
+										hashCache[sourceFilePath] = sourceHash;
+									}
 								}
 
-								Byte[] destinationData = File.ReadAllBytes(filePathDestination);
-								destinationHash = xxHash64.ComputeHash(destinationData, destinationData.Length).ToString();
+								using (var stream = new FileStream(filePathDestination, FileMode.Open, FileAccess.Read))
+								{
+									destinationHash = xxHash64.ComputeHash(stream).ToString();
+								}
 
 								if (sourceHash == destinationHash)
 								{
