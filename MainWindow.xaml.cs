@@ -449,7 +449,7 @@ namespace Wrangler
 								{
 									btnStart.IsEnabled = true;
 									mw.pbrVerified.Foreground = Brushes.Green;
-									MessageBox.Show("Copy and Verification Successfully Completed", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+									MessageBox.Show("Copy and Verification Completed, Recommend Manual Checking of Files", "Completed", MessageBoxButton.OK, MessageBoxImage.Information);
 								}
 							});
 							break;
