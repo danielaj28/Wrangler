@@ -248,15 +248,14 @@ namespace Wrangler
 
 					Directory.CreateDirectory(directoryPathToCreate);
 					File.Copy(sourceFilePath, filePathDestination);
-					IncrementProgress(mw, "copy");
+					IncrementProgress(mw, "copy", String.Format("Copied {0} to {1}", sourceFilePath, filePathDestination));
 					verificationQueue.Enqueue(new Tuple<string, string>(sourceFilePath, filePathDestination));
 				}
 			}
 			catch (Exception ex)
 			{
-				IncrementProgress(mw, "copy-error");
+				IncrementProgress(mw, "copy-error", String.Format("Copy error {0}", ex));
 				MessageBox.Show(ex.Message, String.Format("Error whilst copying to {0}", destinationPath));
-				IncrementProgress(mw, "finish");
 			}
 		}
 
@@ -334,7 +333,7 @@ namespace Wrangler
 
 								if (sourceHash == destinationHash)
 								{
-									IncrementProgress(mw, "verify");
+									IncrementProgress(mw, "verify", String.Format("Verified {0} with hash {1}", filePathDestination, destinationHash));
 								}
 								break;
 							}
@@ -399,12 +398,17 @@ namespace Wrangler
 			}
 		}
 
-		public void IncrementProgress(MainWindow mw, string type)
+		public void IncrementProgress(MainWindow mw, string type, string lastEvent)
 		{
 			try
 			{
 				lock (mw)
 				{
+					Dispatcher.Invoke(() =>
+					{
+						mw.txtLog.Text = String.Format("{0}{1}{2}", lastEvent, Environment.NewLine, mw.txtLog.Text);
+					});
+
 					switch (type)
 					{
 						case "copy":

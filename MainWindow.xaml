@@ -91,5 +91,7 @@
         <ProgressBar x:Name="pbrVerified" Grid.Column="1" Grid.Row="7" Grid.ColumnSpan="5" Height="30" Margin="0" Background="#424242"/>
 
         <TextBlock x:Name="txtVerificationProgress" Grid.Column="1" Grid.Row="7" Text="Not Started" Margin="10" Grid.ColumnSpan="5" HorizontalAlignment="Center" />
+
+        <TextBox x:Name="txtLog" Grid.Column="1" Grid.Row="8" Text="" Margin="10" Grid.ColumnSpan="5" HorizontalAlignment="Left" VerticalScrollBarVisibility="Visible" MaxLines="6" MinLines="2" HorizontalScrollBarVisibility="Auto" />
     </Grid>
 </Window>
