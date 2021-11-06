@@ -24,6 +24,7 @@ namespace Wrangler
 		public static Queue<Tuple<string, string>> verificationQueue = new Queue<Tuple<string, string>>();
 		public static List<Thread> threads = new List<Thread>();
 		public static Boolean running = true;
+		public static Queue<string> logBuffer = new Queue<string>();
 
 		public MainWindow()
 		{
@@ -51,6 +52,10 @@ namespace Wrangler
 				catch (Exception ex)
 				{
 					MessageBox.Show(String.Format("Unable to load presets from file: {0}", ex.Message), "Unable to load presets", MessageBoxButton.OK, MessageBoxImage.Error);
+					lock (logBuffer)
+					{
+						logBuffer.Enqueue(String.Format("Unable to load presets from file: {0}", ex.Message));
+					}
 				}
 
 				if (presets == null)
@@ -63,10 +68,18 @@ namespace Wrangler
 				Thread tv = new Thread(() => Verification(this));
 				tv.Start();
 				threads.Add(tv);
+
+				Thread tl = new Thread(() => Log());
+				tl.Start();
+				threads.Add(tl);
 			}
 			catch (Exception ex2)
 			{
 				MessageBox.Show(String.Format("There was an unexpected error: {0}", ex2.Message), "Unexpected error", MessageBoxButton.OK, MessageBoxImage.Error);
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("There was an unexpected error: {0}", ex2.Message));
+				}
 				throw;
 			}
 		}
@@ -195,6 +208,10 @@ namespace Wrangler
 				catch (Exception inner)
 				{
 					UpdateDriveList();
+					lock (logBuffer)
+					{
+						logBuffer.Enqueue("Unable to get list of files from source device");
+					}
 					throw new Exception("Unable to get list of files from source device", inner);
 				}
 
@@ -227,6 +244,10 @@ namespace Wrangler
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, "An error occured");
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("An error occuredL {0}", ex.Message));
+				}
 				btnStart.IsEnabled = true;
 			}
 		}
@@ -256,6 +277,10 @@ namespace Wrangler
 			{
 				IncrementProgress(mw, "copy-error", String.Format("Copy error {0}", ex));
 				MessageBox.Show(ex.Message, String.Format("Error whilst copying to {0}", destinationPath));
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("Error whilst copying to {0} {1}", destinationPath, ex.Message));
+				}
 			}
 		}
 
@@ -350,6 +375,10 @@ namespace Wrangler
 										mw.btnStart.IsEnabled = true;
 									});
 									MessageBox.Show(String.Format("Unable to verify file {0} -> {1} Error: {2}", sourceFilePath, filePathDestination, ex.Message), "Unable to verify file", MessageBoxButton.OK, MessageBoxImage.Error);
+									lock (logBuffer)
+									{
+										logBuffer.Enqueue(String.Format("Unable to verify file {0} -> {1} Error: {2}", sourceFilePath, filePathDestination, ex.Message));
+									}
 								}
 							}
 						}
@@ -370,6 +399,10 @@ namespace Wrangler
 					btnStart.IsEnabled = true;
 				});
 				MessageBox.Show(String.Format("Issue during verification:{0}", ex3.Message), "Unable to verify files", MessageBoxButton.OK, MessageBoxImage.Error);
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("Issue during verification:{0}", ex3.Message));
+				}
 			}
 		}
 
@@ -395,6 +428,10 @@ namespace Wrangler
 			catch (Exception ex)
 			{
 				MessageBox.Show(String.Format("Unable to save presets to file: {0}", ex.Message), "Unable to save presets", MessageBoxButton.OK, MessageBoxImage.Error);
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("Unable to save presets to file: {0}", ex.Message));
+				}
 			}
 		}
 
@@ -407,6 +444,10 @@ namespace Wrangler
 					Dispatcher.Invoke(() =>
 					{
 						mw.txtLog.Text = String.Format("{0}{1}{2}", lastEvent, Environment.NewLine, mw.txtLog.Text);
+						lock (logBuffer)
+						{
+							logBuffer.Enqueue(lastEvent);
+						}
 					});
 
 					switch (type)
@@ -466,7 +507,53 @@ namespace Wrangler
 			catch (Exception ex)
 			{
 				MessageBox.Show(String.Format("Unable to update progress: {0}", ex.Message), "Unable to update progress", MessageBoxButton.OK, MessageBoxImage.Error);
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("Unable to update progress: {0}", ex.Message));
+				}
 				btnStart.IsEnabled = true;
+			}
+		}
+
+
+
+		private void Log()
+		{
+			try
+			{
+				while (true)
+				{
+					Thread.Sleep(1000);
+					List<String> dataToWrite = new List<String>();
+					String logEntry="";
+					lock (logBuffer)
+					{
+						while (logBuffer.TryDequeue(out logEntry))
+						{
+							dataToWrite.Add(logEntry);
+						}
+					}
+
+					if (dataToWrite.Count > 0)
+					{
+						File.AppendAllLines("log.txt", dataToWrite.ToArray());
+						dataToWrite.Clear();
+						logEntry = "";
+					}
+
+				}
+			}
+			catch (ThreadInterruptedException)
+			{
+
+			}
+			catch (Exception ex3)
+			{
+				lock (logBuffer)
+				{
+					logBuffer.Enqueue(String.Format("Issue during log processing:{0}", ex3.Message));
+				}
+				MessageBox.Show(String.Format("Issue during log processing:{0}", ex3.Message), "Unable to log events", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
 
