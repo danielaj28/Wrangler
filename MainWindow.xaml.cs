@@ -221,12 +221,14 @@ namespace Wrangler
 				processedFiles = 0;
 				pbr1.Maximum = totalFiles;
 				pbr1.Foreground = Brushes.Yellow;
+				txtProgress.Foreground = Brushes.Black;
 				pbr1.Value = processedFiles;
 				txtProgress.Text = string.Format("0% {0}/{1} copied", processedFiles, totalFiles);
 
 				verifiedFiles = 0;
 				pbrVerified.Maximum = totalFiles;
 				pbrVerified.Foreground = Brushes.Yellow;
+				txtVerificationProgress.Foreground = Brushes.Black;
 				pbrVerified.Value = verifiedFiles;
 				txtVerificationProgress.Text = string.Format("0% {0}/{1} verified", verifiedFiles, totalFiles);
 
@@ -395,6 +397,7 @@ namespace Wrangler
 			{
 				Dispatcher.Invoke(() =>
 				{
+					mw.txtVerificationProgress.Foreground = Brushes.Black;
 					mw.pbrVerified.Foreground = Brushes.Red;
 					btnStart.IsEnabled = true;
 				});
@@ -465,6 +468,7 @@ namespace Wrangler
 
 								if (processedFiles == totalFiles)
 								{
+									mw.txtProgress.Foreground = Brushes.Black;
 									mw.pbr1.Foreground = Brushes.Green;
 								}
 							});
@@ -472,6 +476,7 @@ namespace Wrangler
 						case "copy-error":
 							Dispatcher.Invoke(() =>
 							{
+								mw.txtProgress.Foreground = Brushes.White;
 								mw.pbr1.Foreground = Brushes.Red;
 							});
 							break;
@@ -489,6 +494,7 @@ namespace Wrangler
 								if (totalFiles == verifiedFiles)
 								{
 									btnStart.IsEnabled = true;
+									mw.txtVerificationProgress.Foreground = Brushes.Black;
 									mw.pbrVerified.Foreground = Brushes.Green;
 									MessageBox.Show("Copy and Verification Completed, Recommend Manual Checking of Files", "Completed", MessageBoxButton.OK, MessageBoxImage.Information);
 								}
